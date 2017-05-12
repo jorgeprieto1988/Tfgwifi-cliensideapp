@@ -1,13 +1,19 @@
 package com.example.tfg.tfgwifi;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.net.wifi.WpsInfo;
@@ -18,6 +24,7 @@ import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
@@ -45,6 +52,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
     private final IntentFilter intentFilter = new IntentFilter();
     private final WifiP2pConfig config = new WifiP2pConfig();
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,6 +94,8 @@ public class MainActivity extends AppCompatActivity {
         // Indicates this device's details have changed.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
 
+        if(isNetworkAvailable() == false)
+            setOfflineMode();
 
         ///////////////////////////////
         Button clickButton = (Button) findViewById(R.id.bt_consultar);
@@ -248,7 +266,16 @@ public class MainActivity extends AppCompatActivity {
 
                             @Override
                             public void onFailure(int reason) {
-                                Toast.makeText(MainActivity.this, "Connect failed. Retry.",
+                                final int reasontext = reason;
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        textocompartir.setText("falla por : " + reasontext);
+                                        //stuff that updates ui
+
+                                    }
+                                });
+                                Toast.makeText(MainActivity.this, "Connect failed. Retry. " + reason,
                                         Toast.LENGTH_SHORT).show();
                             }
                         });
@@ -261,7 +288,7 @@ public class MainActivity extends AppCompatActivity {
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        textocompartir.setText(infoshow.getClientList().toString());
+                                        textocompartir.setText("Lista de clientes: " + infoshow.getClientList().toString());
                                         //stuff that updates ui
 
                                     }
@@ -377,7 +404,12 @@ public class MainActivity extends AppCompatActivity {
 
 
         });
+
+
+
     }
+
+
 
     private LocationManager locationManager;
     private TextView textView;
@@ -504,6 +536,7 @@ public class MainActivity extends AppCompatActivity {
                         JsonArrayRequest jsarrayRequest = new JsonArrayRequest
                                 (Request.Method.GET, urljson, null, new Response.Listener<JSONArray>() {
 
+                                    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
                                     @Override
                                     public void onResponse(JSONArray response) {
                                         textView.setText("Response: " + response.toString());
@@ -515,6 +548,9 @@ public class MainActivity extends AppCompatActivity {
                                                 e.printStackTrace();
                                             }
                                         }
+                                        if (lista_mensajes.size() > 0)
+                                            toSendingMode();
+
                                         ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this,
                                                 android.R.layout.simple_list_item_1, lista_mensajes);
 
@@ -562,5 +598,328 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         locationManager.removeUpdates(networkLocationListener);
         locationManager.removeUpdates(gpsLocationListener);
+    }
+    /////MODO ON ///////////
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+    void toSendingMode()
+    {
+        //  Create a string map containing information about your service.
+        final TextView textocompartir = (TextView) findViewById(R.id.tv_wifi);
+        Map record = new HashMap();
+        record.put("listenport", String.valueOf("4444"));
+        record.put("buddyname", "TFGAPP" +  android.os.Build.MODEL +" "+ (int) (Math.random() * 1000));
+        record.put("available", "visible");
+
+        // Service information.  Pass it an instance name, service type
+        // _protocol._transportlayer , and the map containing
+        // information other devices will want once they connect to this one.
+        final WifiP2pDnsSdServiceInfo serviceInfo =
+                WifiP2pDnsSdServiceInfo.newInstance("_tfgapp" + android.os.Build.MODEL, "_presence._tcp", record);
+
+        // Add the local service, sending the service info, network channel,
+        // and listener that will be used to indicate success or failure of
+        // the request.
+
+        final WifiP2pManager manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+        final WifiP2pManager.Channel channel = manager.initialize(MainActivity.this, getMainLooper(), null);
+        manager.addLocalService(channel, serviceInfo, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                // Command successful! Code isn't necessarily needed here,
+                // Unless you want to update the UI or add logging statements.
+                manager.createGroup(channel, new WifiP2pManager.ActionListener() {
+                    @Override
+                    public void onSuccess() {
+
+                    }
+
+                    @Override
+                    public void onFailure(int reason) {
+                        final int reasontext = reason;
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                textocompartir.setText("falla por : " + reasontext);
+                                //stuff that updates ui
+
+                            }
+                        });
+                        Toast.makeText(MainActivity.this, "Connect failed. Retry. " + reason,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                manager.requestGroupInfo(channel, new WifiP2pManager.GroupInfoListener() {
+                    @Override
+                    public void onGroupInfoAvailable(WifiP2pGroup info) {
+                        final WifiP2pGroup infoshow = info;
+                        // WiFiDirectBroadcastReceiver will notify us. Ignore for now.
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                textocompartir.setText("Lista de clientes: " + infoshow.getClientList().toString());
+                                //stuff that updates ui
+
+                            }
+                        });
+
+                        connection_in_background(info);
+                    }
+                });
+                Log.i(TAG, "Conectado!");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        textocompartir.setText("Conectando y dando servicio... mi modelo es " + android.os.Build.MODEL);
+                        //stuff that updates ui
+
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(int arg0) {
+                // Command failed.  Check for P2P_UNSUPPORTED, ERROR, or BUSY
+                Log.i(TAG, "falla..."+ arg0);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        textocompartir.setText("Algo falla..." + channel.toString() + " y manager " + manager.toString());
+                        //stuff that updates ui
+
+                    }
+                });
+            }
+        });
+    }
+
+    private void connection_in_background(WifiP2pGroup info) {
+        AsyncTask FileServerAsyncTask = new AsyncTask() {
+
+            @Override
+            protected Object doInBackground(Object[] params) {
+                try {
+
+                    /**
+                     * Create a server socket and wait for client connections. This
+                     * call blocks until a connection is accepted from a client
+                     */
+                    ServerSocket serverSocket = new ServerSocket(8888);
+                    Socket client = serverSocket.accept();
+
+                    /**
+                     * If this code is reached, a client has connected and transferred data
+                     * Save the input stream from the client as a JPEG file
+                     */
+                    ///////PROBAR///////
+                    ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
+                    out.writeObject(lista_mensajes);
+
+                    out.close();
+
+                    ///////////////////
+                    serverSocket.close();
+                    return lista_mensajes;
+                } catch (IOException e) {
+                    Log.e(TAG, e.getMessage());
+                    return null;
+                }
+            }
+        };
+
+    }
+
+    /////MODO OFF /////
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+    public void setOfflineMode()
+    {
+        final TextView textobuscar = (TextView) findViewById(R.id.tv_wifi);
+
+        final HashMap<String, String> buddies = new HashMap<String, String>();
+        WifiP2pManager.DnsSdTxtRecordListener dnslistener = new WifiP2pManager.DnsSdTxtRecordListener(){
+
+            @Override
+            public void onDnsSdTxtRecordAvailable(String fullDomainName, Map<String, String> txtRecordMap, WifiP2pDevice srcDevice) {
+                Log.d(TAG, "DnsSdTxtRecord available -" + txtRecordMap.toString());
+                buddies.put(srcDevice.deviceAddress, txtRecordMap.get("buddyname"));
+            }
+        };
+
+        final WifiP2pManager manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+        final WifiP2pManager.Channel channel = manager.initialize(MainActivity.this, getMainLooper(), null);
+
+        WifiP2pManager.DnsSdServiceResponseListener servListener = new WifiP2pManager.DnsSdServiceResponseListener() {
+            @Override
+            public void onDnsSdServiceAvailable(String instanceName, String registrationType,
+                                                WifiP2pDevice resourceType) {
+
+                // Update the device name with the human-friendly version from
+                // the DnsTxtRecord, assuming one arrived.
+                resourceType.deviceName = buddies
+                        .containsKey(resourceType.deviceAddress) ? buddies
+                        .get(resourceType.deviceAddress) : resourceType.deviceName;
+
+                // Add to the custom adapter defined specifically for showing
+                // wifi devices.
+                final WifiP2pDevice deviceinfo = resourceType;
+                Log.d(TAG, "onBonjourServiceAvailable " + instanceName);
+                final String nameservice = instanceName;
+
+                config.deviceAddress = resourceType.deviceAddress;
+                config.wps.setup = WpsInfo.PBC;
+                //manager.createGroup(channel, new WifiP2pManager.ActionListener() {
+                manager.connect(channel, config, new WifiP2pManager.ActionListener() {
+
+                    @Override
+                    public void onSuccess() {
+                        // WiFiDirectBroadcastReceiver will notify us. Ignore for now.
+                        connectToUserON(config);
+                    }
+
+                    @Override
+                    public void onFailure(int reason) {
+                        Toast.makeText(MainActivity.this, "Connect failed. Retry.",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        textobuscar.setText("Recibidos..." + nameservice + " datos: " + deviceinfo.toString());
+                        //stuff that updates ui
+
+                    }
+                });
+            }
+        };
+
+
+        manager.setDnsSdResponseListeners(channel, servListener, dnslistener);
+
+
+
+        WifiP2pDnsSdServiceRequest serviceRequest = WifiP2pDnsSdServiceRequest.newInstance();
+        manager.addServiceRequest(channel,
+                serviceRequest,
+                new WifiP2pManager.ActionListener() {
+                    @Override
+                    public void onSuccess() {
+                        // Success!
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                textobuscar.setText("Success service request");
+                                //stuff that updates ui
+
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(int code) {
+                        final int error = code;
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                textobuscar.setText("Fallando service request " + error);
+                                //stuff that updates ui
+
+                            }
+                        });
+                        // Command failed.  Check for P2P_UNSUPPORTED, ERROR, or BUSY
+                    }
+                });
+
+        manager.discoverServices(channel, new WifiP2pManager.ActionListener() {
+
+            @Override
+            public void onSuccess() {
+                // Success!
+            }
+
+            @Override
+            public void onFailure(int code) {
+                // Command failed.  Check for P2P_UNSUPPORTED, ERROR, or BUSY
+                if (code == WifiP2pManager.P2P_UNSUPPORTED)
+                    Log.d(TAG, "P2P isn't supported on this device.");
+            }
+
+        });
+    }
+
+    private void connectToUserON(WifiP2pConfig config) {
+        Context context = this.getApplicationContext();
+        String host;
+        int port;
+        int len;
+        Socket socket = new Socket();
+        byte buf[]  = new byte[1024];
+
+        host = config.deviceAddress;
+        port = 8888;
+
+        try {
+            /**
+             * Create a client socket with the host,
+             * port, and timeout information.
+             */
+            socket.bind(null);
+            socket.connect((new InetSocketAddress(host, port)), 500);
+
+            InputStream inputstream = socket.getInputStream();
+
+            final String mensajes = inputstream.toString();
+
+
+            inputstream.close();
+            socket.close();
+
+            runOnUiThread(new Runnable() {
+                final TextView textobuscar2 = (TextView) findViewById(R.id.tv_wifi);
+                @Override
+                public void run() {
+                    textobuscar2.setText("Exito cogiendo mensajes! : " + mensajes );
+                    //stuff that updates ui
+
+                }
+            });
+
+
+            /**
+             * Create a byte stream from a JPEG file and pipe it to the output stream
+             * of the socket. This data will be retrieved by the server device.
+             */
+
+
+        }
+        catch (IOException e) {
+            //catch logic
+        }
+
+        //METER CATCH ERROR
+
+/**
+ * Clean up any open sockets when done
+ * transferring or if an exception occurred.
+ */
+        finally {
+            if (socket != null) {
+                if (socket.isConnected()) {
+                    try {
+                        socket.close();
+                    } catch (IOException e) {
+                        //catch logic
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null;
     }
 }
