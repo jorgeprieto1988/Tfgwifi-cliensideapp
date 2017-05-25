@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
     public WifiP2pManager manager;
     public WifiP2pManager.Channel channel;
     boolean conectado = false;
+    public static TextView textViewObj;
 
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
@@ -108,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         BroadcastReceiver receiver;
         receiver = new wifip2preceiver();
-
+        textViewObj = (TextView) findViewById(R.id.tv_wifi);
         Log.d("app", "Mi versión de android" + Build.VERSION.SDK_INT);
 
         ////CONECT P2P/////
@@ -1144,9 +1145,10 @@ public class MainActivity extends AppCompatActivity {
                         boolean reconectando = wifiManager.reconnect();
                         Log.d("app", "reconectando..." + reconectando);
 
+                        /*
                         Intent broadcastedIntent=new Intent(MainActivity.this, NetworkStateReceiver.class);
                         broadcastedIntent.putExtra("network_id", netid);
-                        sendBroadcast(broadcastedIntent);
+                        sendBroadcast(broadcastedIntent);*/
                     }
                     catch(Error e) {
                         e.printStackTrace();
@@ -1312,8 +1314,8 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("app", "Entra a la conexión y la info es " + resourceType.toString());
 
                 final String nameservice = instanceName;
-
-                String infoservice = resourceType.deviceName.toString();
+                Log.d("app", "Instance name is  " + nameservice.toString());
+                String infoservice = nameservice.toString();
                 String paraminfoservice[] = infoservice.split(":");
                 if (paraminfoservice.length >= 4){
                     String name_ssid = paraminfoservice[1];
@@ -1346,10 +1348,10 @@ public class MainActivity extends AppCompatActivity {
                         wifiManager.enableNetwork(singleton.netid, true);
                         boolean reconectando = wifiManager.reconnect();
                         Log.d("app", "reconectando..." + reconectando);
-
+                        /*
                         Intent broadcastedIntent=new Intent(MainActivity.this, NetworkStateReceiver.class);
                         broadcastedIntent.putExtra("network_id", singleton.netid);
-                        sendBroadcast(broadcastedIntent);
+                        sendBroadcast(broadcastedIntent); QUIZA HAY QUÉ DESCOMENTAR ESTO*/
                     }
                     catch(Error e) {
                         e.printStackTrace();
@@ -1631,7 +1633,7 @@ public class MainActivity extends AppCompatActivity {
                     // _protocol._transportlayer , and the map containing
                     // information other devices will want once they connect to this one.
                     final WifiP2pDnsSdServiceInfo serviceInfo =
-                            WifiP2pDnsSdServiceInfo.newInstance("_tfgapp" + singleton.ssid_m + ":" + singleton.password_m + ":" + singleton.group_ip_m, "_presence._tcp", record);
+                            WifiP2pDnsSdServiceInfo.newInstance("_tfgapp:" + singleton.ssid_m + ":" + singleton.password_m + ":" + singleton.group_ip_m, "_presence._tcp", record);
                     if(servicio_creado == false) {
 
 
@@ -1717,7 +1719,7 @@ public class MainActivity extends AppCompatActivity {
                     // _protocol._transportlayer , and the map containing
                     // information other devices will want once they connect to this one.
                     final WifiP2pDnsSdServiceInfo serviceInfo =
-                            WifiP2pDnsSdServiceInfo.newInstance("_tfgapp" + ssid + ":" + password + ":" + group_ip, "_presence._tcp", record);
+                            WifiP2pDnsSdServiceInfo.newInstance("_tfgapp:" + ssid + ":" + password + ":" + group_ip, "_presence._tcp", record);
                     if(servicio_creado == false) {
 
 

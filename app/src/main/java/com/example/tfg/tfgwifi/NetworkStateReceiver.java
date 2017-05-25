@@ -58,7 +58,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
             }
             else
             {
-                Log.d("app","There's no network connectivity");
+                Log.d("app","There's no network connectivity" + intent.getExtras().toString());
                 // MainActivity main = new MainActivity();
                 // main.setOfflineMode();
             }
@@ -82,7 +82,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
         Socket socket = new Socket();
         byte buf[]  = new byte[1024];
 
-        port = 8888;
+        port = 9999;
 
         try {
             /**
@@ -93,26 +93,17 @@ public class NetworkStateReceiver extends BroadcastReceiver {
             socket.bind(null);
 
             Log.d("app","Ip es: " + address.toString());
-            ///COMPROBAR QUÉ QUIZÁ LA INET QUE COGES ES LA PRIVADA DE LA OTRA RED??///
-            socket.connect((new InetSocketAddress(address, port)), 500);
+
+            socket.connect((new InetSocketAddress(address, port)), 5000);
             Log.d("app","Paso por aquí 2");
 
             InputStream inputstream = socket.getInputStream();
 
             Scanner s = new Scanner(inputstream).useDelimiter("\\A");
             final String result = s.hasNext() ? s.next() : "";
-
+            MainActivity.textViewObj.setText(result);
             inputstream.close();
             socket.close();
-
-
-
-            /**
-             * Create a byte stream from a JPEG file and pipe it to the output stream
-             * of the socket. This data will be retrieved by the server device.
-             */
-
-
         }
         catch(UnknownHostException e) {
             Log.d("app","Error por el host" + e.toString());

@@ -47,7 +47,7 @@ public class SocketService extends IntentService {
              */
             main_algorithm singleton = main_algorithm.getInstance();
             InetAddress addr = InetAddress.getByName(singleton.group_ip_m);
-            ServerSocket serverSocket = new ServerSocket(8888, 8888, addr);
+            ServerSocket serverSocket = new ServerSocket(9999, 9999, addr);
 
             Log.e(TAG, "Abro mis sockets yas con la ip " + addr.getHostAddress());
             Socket client = serverSocket.accept();
