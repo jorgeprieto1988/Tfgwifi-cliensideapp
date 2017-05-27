@@ -1,5 +1,6 @@
 package com.example.tfg.tfgwifi;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.net.wifi.p2p.WifiP2pConfig;
@@ -35,6 +36,9 @@ class main_algorithm {
     public WifiP2pManager.Channel channel_off;
     boolean conectado_m = false;
     int netid = 0;
+    Context mContext;
+    BroadcastReceiver receiver_m;
+    boolean permiso_envio = false;
 
     private static final main_algorithm ourInstance = new main_algorithm();
 
@@ -44,19 +48,16 @@ class main_algorithm {
 
     private main_algorithm() {
     }
-    /*
     ///MODO ON AUTOMÁTICO ////
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-
-    void toSendingModeAuto_m()
+    public void toSendingModeAuto_m()
     {
-        //  Create a string map containing information about your service.
-        final TextView textocompartir = (TextView) findViewById(R.id.tv_wifi);
-
-        manager_m = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
-        channel_m = manager_m.initialize(getApplicationContext(), getMainLooper(), null);
-
-        manager_m.removeGroup(channel_m, new WifiP2pManager.ActionListener() {
+        main_algorithm singleton = main_algorithm.getInstance();
+        /*
+        singleton.manager_m = (WifiP2pManager) mContext.getSystemService(Context.WIFI_P2P_SERVICE);
+        singleton.channel_m = singleton.manager_m.initialize(mContext, getMainLooper(), null);
+        */
+        singleton.manager_m.removeGroup(singleton.channel_m, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
                 Log.d("app","Se borra");
@@ -67,43 +68,28 @@ class main_algorithm {
                 Log.d("app","No se borra");
             }
         });
-        manager_m.createGroup(channel_m, new WifiP2pManager.ActionListener() {
+        singleton.manager_m.createGroup(singleton.channel_m, new WifiP2pManager.ActionListener() {
 
             @Override
             public void onSuccess() {
-
+                /*
                 Intent serviceIntent = new Intent(MainActivity.this, SocketService.class);
                 serviceIntent.putExtra("lista", lista_mensajes);
                 startService(serviceIntent);
+                */
+                main_algorithm singleton = main_algorithm.getInstance();
+                Log.d("app", "Crea grupo " + singleton.channel_m);
+                singleton.permiso_envio = true;
 
-                Log.d("app", "Crea grupo " + channel_m);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        textocompartir.setText(textocompartir.getText() + "\n" + "Grupo creado"  + "\n") ;
-                        //stuff that updates ui
-
-                    }
-
-                });
-
+                MainActivity.textViewObj.setText("Grupo creado");
 
             }
 
             @Override
             public void onFailure(int reason) {
                 final int reasontext = reason;
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        textocompartir.setText("falla por : " + reasontext);
-                        //stuff that updates ui
-
-                    }
-                });
+                MainActivity.textViewObj.setText("Falla por:" + reasontext);
             }
         });
-
     }
-    */
 }

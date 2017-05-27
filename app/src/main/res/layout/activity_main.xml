@@ -106,12 +106,25 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:layout_marginLeft="16dp"
+        android:layout_marginLeft="32dp"
         android:layout_marginStart="32dp"
         android:text="Borrar grupo"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         tools:layout_constraintBottom_creator="1"
         tools:layout_constraintLeft_creator="1" />
+
+    <Button
+        android:id="@+id/bt_borraservicios"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="153dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="6dp"
+        android:text="Borrar Servicios"
+        app:layout_constraintLeft_toRightOf="@+id/bt_borra_grupo"
+        app:layout_constraintTop_toBottomOf="@+id/lv_listamensajes"
+        tools:layout_constraintLeft_creator="1"
+        tools:layout_constraintTop_creator="1" />
 
 </android.support.constraint.ConstraintLayout>

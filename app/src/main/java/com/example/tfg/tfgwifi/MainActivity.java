@@ -107,9 +107,26 @@ public class MainActivity extends AppCompatActivity {
         StrictMode.setThreadPolicy(policy);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        BroadcastReceiver receiver;
-        receiver = new wifip2preceiver();
+        /*BroadcastReceiver receiver;
+        receiver = new wifip2preceiver();*/
+
         textViewObj = (TextView) findViewById(R.id.tv_wifi);
+        main_algorithm singleton = main_algorithm.getInstance();
+        singleton.receiver_m = new wifip2preceiver();
+        singleton.manager_m = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+        singleton.channel_m = singleton.manager_m.initialize(MainActivity.this, getMainLooper(), null);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this,
+                android.R.layout.simple_list_item_1, lista_mensajes);
+
+        ArrayAdapter<String> adapter_singleton = new ArrayAdapter<String>(MainActivity.this,
+                android.R.layout.simple_list_item_1, singleton.lista_mensajes_m);
+
+        ListView listView = (ListView) findViewById(R.id.lv_listamensajes);
+        listView.setAdapter(adapter);
+
+        ListView listView_singleton = (ListView) findViewById(R.id.lv_listamensajes);
+        listView_singleton.setAdapter(adapter_singleton);
         Log.d("app", "Mi versión de android" + Build.VERSION.SDK_INT);
 
         ////CONECT P2P/////
@@ -125,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
         // Indicates this device's details have changed.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
 
-        this.getApplicationContext().registerReceiver(receiver, intentFilter);
+        this.getApplicationContext().registerReceiver(singleton.receiver_m, intentFilter);
 
         if(isNetworkAvailable() == false) {
             setOfflineMode_m();
@@ -139,6 +156,7 @@ public class MainActivity extends AppCompatActivity {
         Button clickButtonCompartir = (Button) findViewById(R.id.bt_share);
         Button clickButtonBuscar = (Button) findViewById(R.id.bt_buscar);
         Button clickBorrarGrupo = (Button) findViewById(R.id.bt_borra_grupo);
+        Button clickBorrarServicios = (Button) findViewById(R.id.bt_borraservicios);
         final TextView texto = (TextView) findViewById(R.id.tv_content);
         textView = (TextView) findViewById(R.id.tv_content);
         locationManager = (LocationManager)
@@ -162,6 +180,29 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onFailure(int reason) {
                             Log.d("app", "No se borra con botón");
+                        }
+                    });
+                }
+            }
+        });
+
+        clickBorrarServicios.setOnClickListener(new View.OnClickListener(){
+            final TextView textobuscar = (TextView) findViewById(R.id.tv_wifi);
+            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+            @Override
+            public void onClick(View v) {
+                main_algorithm singleton = main_algorithm.getInstance();
+                if(singleton.manager_m != null && singleton.channel_m != null) {
+                    singleton.manager_m.clearLocalServices(singleton.channel_m, new WifiP2pManager.ActionListener(){
+
+                        @Override
+                        public void onSuccess() {
+                            Log.d("app", "Se borra servicio con botón");
+                        }
+
+                        @Override
+                        public void onFailure(int reason) {
+                                Log.d("app", "No se borra con botón");
                         }
                     });
                 }
@@ -313,6 +354,7 @@ public class MainActivity extends AppCompatActivity {
 
                 final WifiP2pManager manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
                 final WifiP2pManager.Channel channel = manager.initialize(MainActivity.this, getMainLooper(), null);
+
                 manager.addLocalService(channel, serviceInfo, new WifiP2pManager.ActionListener() {
                     @Override
                     public void onSuccess() {
@@ -530,11 +572,7 @@ public class MainActivity extends AppCompatActivity {
                                         e.printStackTrace();
                                     }
                                 }
-                                ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this,
-                                        android.R.layout.simple_list_item_1, lista_mensajes);
 
-                                ListView listView = (ListView) findViewById(R.id.lv_listamensajes);
-                                listView.setAdapter(adapter);
 
                             }
                         }, new Response.ErrorListener() {
@@ -832,7 +870,7 @@ public class MainActivity extends AppCompatActivity {
 
     ///MODO ON AUTOMÁTICO ////
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-    void toSendingModeAuto_m()
+    public void toSendingModeAuto_m()
     {
         //  Create a string map containing information about your service.
         final TextView textocompartir = (TextView) findViewById(R.id.tv_wifi);
@@ -868,6 +906,7 @@ public class MainActivity extends AppCompatActivity {
                 */
                 main_algorithm singleton = main_algorithm.getInstance();
                 Log.d("app", "Crea grupo " + singleton.channel_m);
+                singleton.permiso_envio = true;
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -1294,8 +1333,9 @@ public class MainActivity extends AppCompatActivity {
         };
 
         main_algorithm singleton = main_algorithm.getInstance();
-        singleton.manager_off = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
-        singleton.channel_off = singleton.manager_off.initialize(MainActivity.this, getMainLooper(), null);
+
+        singleton.manager_m = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+        singleton.channel_m = singleton.manager_m.initialize(MainActivity.this, getMainLooper(), null);
 
         WifiP2pManager.DnsSdServiceResponseListener servListener = new WifiP2pManager.DnsSdServiceResponseListener() {
             @Override
@@ -1371,12 +1411,12 @@ public class MainActivity extends AppCompatActivity {
         };
 
 
-        singleton.manager_off.setDnsSdResponseListeners(singleton.channel_off, servListener, dnslistener);
+        singleton.manager_m.setDnsSdResponseListeners(singleton.channel_m, servListener, dnslistener);
 
 
 
         WifiP2pDnsSdServiceRequest serviceRequest = WifiP2pDnsSdServiceRequest.newInstance();
-        singleton.manager_off.addServiceRequest(singleton.channel_off,
+        singleton.manager_m.addServiceRequest(singleton.channel_m,
                 serviceRequest,
                 new WifiP2pManager.ActionListener() {
                     @Override
@@ -1407,7 +1447,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
-        singleton.manager_off.discoverServices(singleton.channel_off, new WifiP2pManager.ActionListener() {
+        singleton.manager_m.discoverServices(singleton.channel_m, new WifiP2pManager.ActionListener() {
 
             @Override
             public void onSuccess() {
@@ -1575,7 +1615,7 @@ public class MainActivity extends AppCompatActivity {
                 //might still be negotiating group owner for example
                 Log.d("app", "Entrando después de crear grupo");
                 main_algorithm singleton = main_algorithm.getInstance();
-                if(singleton.manager_m != null) {
+                if(singleton.manager_m != null && singleton.permiso_envio == true) {
                     singleton.manager_m.requestConnectionInfo(singleton.channel_m, new WifiP2pManager.ConnectionInfoListener() {
 
                         @Override
@@ -1599,7 +1639,7 @@ public class MainActivity extends AppCompatActivity {
                     startService(serviceIntent);
                     crearServicio_m();
                     */
-                }
+                } // CAMBIAR ESTO POR UN SOLO MANAGER!
             } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
                 // Respond to this device's wifi state changing
             }

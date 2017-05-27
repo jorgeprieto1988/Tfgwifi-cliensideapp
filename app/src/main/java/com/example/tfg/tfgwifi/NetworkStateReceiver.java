@@ -75,12 +75,14 @@ public class NetworkStateReceiver extends BroadcastReceiver {
         }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void connectToUserON(InetAddress address) {
         String host;
         int port;
         int len;
         Socket socket = new Socket();
         byte buf[]  = new byte[1024];
+        main_algorithm singleton = main_algorithm.getInstance();
 
         port = 9999;
 
@@ -102,8 +104,12 @@ public class NetworkStateReceiver extends BroadcastReceiver {
             Scanner s = new Scanner(inputstream).useDelimiter("\\A");
             final String result = s.hasNext() ? s.next() : "";
             MainActivity.textViewObj.setText(result);
+            singleton.lista_mensajes_m.add(result);
+            Log.d("app",result);
             inputstream.close();
             socket.close();
+
+            singleton.toSendingModeAuto_m();
         }
         catch(UnknownHostException e) {
             Log.d("app","Error por el host" + e.toString());
