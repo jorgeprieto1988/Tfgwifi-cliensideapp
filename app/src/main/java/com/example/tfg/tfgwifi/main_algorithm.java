@@ -11,6 +11,8 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+
 import java.util.ArrayList;
 
 import static android.os.Looper.getMainLooper;
@@ -39,6 +41,7 @@ class main_algorithm {
     Context mContext;
     BroadcastReceiver receiver_m;
     boolean permiso_envio = false;
+    JSONArray response_m;
 
     private static final main_algorithm ourInstance = new main_algorithm();
 
@@ -48,6 +51,8 @@ class main_algorithm {
 
     private main_algorithm() {
     }
+
+
     ///MODO ON AUTOMÁTICO ////
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     public void toSendingModeAuto_m()

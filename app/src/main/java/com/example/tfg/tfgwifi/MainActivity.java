@@ -650,6 +650,8 @@ public class MainActivity extends AppCompatActivity {
                                                 }
 
                                                 if(!existe){
+                                                   // main_algorithm singleton = main_algorithm.getInstance();
+                                                    //singleton.response_m.put(response.getJSONObject(i));
                                                     lista_mensajes.add(response.getJSONObject(i).get("mensaje").toString());
                                                     toSendingModeAuto_m();
                                                 }
@@ -1159,49 +1161,24 @@ public class MainActivity extends AppCompatActivity {
 
                     WifiConfiguration wificonfig = new WifiConfiguration();
                     wificonfig.SSID = String.format("\"%s\"", name_ssid);
-                    //wificonfig.SSID =  "\"" + name_ssid + "\"";
-                    //String.format("\"%s\"", name_ssid);
-                    //wificonfig.preSharedKey = "\""+ password_service +"\"";
+                    wificonfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+                    wificonfig.allowedAuthAlgorithms.set(0);
+                    wificonfig.status = 2;
                     wificonfig.preSharedKey = String.format("\"%s\"", password_service);
 
                     Log.d("app", wificonfig.SSID.toString());
                     Log.d("app", wificonfig.preSharedKey.toString());
-                    //   this.wifiManager.disconnect();
 
-                    //wifiManager.disconnect();
-                    //wificonfig.priority = 10000;
-                    wifiManager.updateNetwork(wificonfig);
-                    //wifiManager.saveConfiguration();
-                    try {
-                        //wifiManager.disconnect();
+                   // wifiManager.updateNetwork(wificonfig);
+
                         int netid = wifiManager.addNetwork(wificonfig);
-                        //wifiManager.saveConfiguration();
-                        //wifiManager.updateNetwork(wificonfig);
+
                         Log.d("app", "la id de wifi es " + netid);
-                        //Log.d("app", "información de wifi actual " + wifiManager.getConnectionInfo());
-                        wifiManager.disconnect();
-                        wifiManager.enableNetwork(netid, true);
-                        boolean reconectando = wifiManager.reconnect();
-                        Log.d("app", "reconectando..." + reconectando);
 
-                        /*
-                        Intent broadcastedIntent=new Intent(MainActivity.this, NetworkStateReceiver.class);
-                        broadcastedIntent.putExtra("network_id", netid);
-                        sendBroadcast(broadcastedIntent);*/
-                    }
-                    catch(Error e) {
-                        e.printStackTrace();
-                    }
-                    /*
-                    try {
-                        connectToUserON(config, InetAddress.getByName(ip_address));
-                    } catch (UnknownHostException e) {
-                        e.printStackTrace();
-                    }
+                        boolean status =wifiManager.enableNetwork(netid, true);
+                 //       boolean reconectando = wifiManager.reconnect();
+                     Log.d("app", "reconectando..." + status);
 
-                    wifiManager.disconnect();
-                    //this.wifiManager.reconnect();
-                    */
                 }
 
                 /*

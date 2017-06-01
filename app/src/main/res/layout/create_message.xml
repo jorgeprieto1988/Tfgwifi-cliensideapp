@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Button
+        android:id="@+id/bt_enviar_msg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enviar alerta"
+        tools:layout_editor_absoluteX="29dp"
+        tools:layout_editor_absoluteY="418dp" />
+
+    <Button
+        android:id="@+id/bt_compartir_off"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Compartir offline"
+        tools:layout_editor_absoluteX="189dp"
+        tools:layout_editor_absoluteY="418dp" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Area de efecto (m)"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="136dp" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Coordenadas"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="186dp" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tiempo de vida"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="327dp" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Mensage"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="26dp" />
+
+    <EditText
+        android:id="@+id/editText"
+        android:layout_width="250dp"
+        android:layout_height="91dp"
+        android:ems="10"
+        android:inputType="textMultiLine"
+        tools:layout_editor_absoluteY="26dp"
+        tools:layout_editor_absoluteX="98dp" />
+
+    <EditText
+        android:id="@+id/editText2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="En metros"
+        tools:layout_editor_absoluteX="151dp"
+        tools:layout_editor_absoluteY="127dp" />
+
+    <EditText
+        android:id="@+id/editText3"
+        android:layout_width="88dp"
+        android:layout_height="38dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="Longitud"
+        tools:layout_editor_absoluteX="116dp"
+        tools:layout_editor_absoluteY="177dp" />
+
+    <EditText
+        android:id="@+id/editText4"
+        android:layout_width="88dp"
+        android:layout_height="38dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="Latitud"
+        tools:layout_editor_absoluteX="230dp"
+        tools:layout_editor_absoluteY="177dp" />
+
+    <Button
+        android:id="@+id/bt_mi_pos"
+        android:layout_width="152dp"
+        android:layout_height="33dp"
+        android:text="Mi posición"
+        tools:layout_editor_absoluteX="134dp"
+        tools:layout_editor_absoluteY="239dp" />
+
+    <EditText
+        android:id="@+id/editText5"
+        android:layout_width="105dp"
+        android:layout_height="44dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="En minutos"
+        tools:layout_editor_absoluteX="158dp"
+        tools:layout_editor_absoluteY="300dp" />
+
+</android.support.constraint.ConstraintLayout>

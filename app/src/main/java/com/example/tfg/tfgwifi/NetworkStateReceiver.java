@@ -34,7 +34,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d("app","Entra en onReceive");
-            String action = intent.getAction();
+        String action = intent.getAction();
         int id_network_group =intent.getIntExtra("network_id", 0);
         final MainActivity main = new MainActivity();
 
