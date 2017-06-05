@@ -122,7 +122,9 @@
         app:layout_constraintLeft_toLeftOf="@+id/et_area"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginLeft="42dp"
-        android:layout_marginRight="42dp" />
+        android:layout_marginRight="42dp"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintVertical_bias="0.51" />
 
     <EditText
         android:id="@+id/et_area"
